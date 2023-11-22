@@ -54,9 +54,9 @@ public class ControladorUsuario {
 		return usersService.canStartRide(request);
 	}
 
-	@PostMapping("/payService")
-	public ResponseEntity<Cuenta> payService(HttpServletRequest request, @RequestBody DtoPago dto) {
-		return usersService.payService(request, dto);
+	@PostMapping("/pagar")
+	public ResponseEntity<Cuenta> pagar(HttpServletRequest request, @RequestBody DtoPago dto) {
+		return usersService.pagar(request, dto);
 	}
 
 	@GetMapping("/getRol")

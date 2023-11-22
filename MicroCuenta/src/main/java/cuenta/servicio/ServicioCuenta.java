@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class ServicioCuenta {
 
 	@Autowired
-	private RepositorioCuenta accountsRepository;
+	private RepositorioCuenta cuentaRepository;
 	@Autowired
 	private RepositorioUsuario usersRepository;
 	@Autowired
@@ -33,95 +33,91 @@ public class ServicioCuenta {
 	private UserDetailsService userDetailsService;
 	
 	public Cuenta save(DtoCuenta dto) {
-		return accountsRepository.save(convertToEntity(dto));
+		return cuentaRepository.save(convertToEntity(dto));
 	}
 	
 	private Cuenta convertToEntity(DtoCuenta dto) {
 		return new Cuenta(dto.getFechaAlta(), dto.getSaldo(), dto.getMercadoPagoId());
 	}
 
-	public ResponseEntity<Cuenta> addMoney(HttpServletRequest request, int accountId, double moneyCount) {
-		Optional<Cuenta> optionalAccount = accountsRepository.findById(accountId);
+	public ResponseEntity<Cuenta> acreditar(HttpServletRequest request, int accountId, double moneyCount) {
+		Optional<Cuenta> optionalAccount = cuentaRepository.findById(accountId);
 		if (!optionalAccount.isPresent())
 			return ResponseEntity.notFound().build();
 		Cuenta account = optionalAccount.get();
 
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+		String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
         Usuario user = usersRepository.findByEmail(email).get();
 
-		if (!user.getAccounts().contains(account))
+		if (!user.getCuenta().contains(account))
 			return ResponseEntity.badRequest().build();
 		
-		/*
-			* Antes de sumar el dinero la app debería comunicarse con una API de MercadoPago, para
-			* restar el dinero de MercadoPago antes de sumarlo aquí (luego de verificar que la cuenta
-			* de MercadoPago tenga ese dinero disponible)
-			* */
-		account.addMoney(moneyCount);
-		return ResponseEntity.ok(accountsRepository.save(account));
+		/*	transaccion con MP */
+		account.acreditar(moneyCount);
+		return ResponseEntity.ok(cuentaRepository.save(account));
 	}
 
 	public Cuenta linkUser(int accountId, int userId) {
-		Optional<Cuenta> optionalAccount = accountsRepository.findById(accountId);
+		Optional<Cuenta> optionalAccount = cuentaRepository.findById(accountId);
 		if (optionalAccount.isPresent()) {
 			Cuenta account = optionalAccount.get();
 			Optional<Usuario> optionalUser = usersRepository.findById(userId);
 			if (optionalUser.isPresent()) {
 				Usuario user = optionalUser.get();
-				account.addUser(user);
-				return accountsRepository.save(account);
+				account.agregarUsuario(user);
+				return cuentaRepository.save(account);
 			}
 			return null;
 		}
 		return null;
 	}
 
-	public ResponseEntity<Cuenta> deactivate(HttpServletRequest request, int id) {
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+	public ResponseEntity<Cuenta> deactivar(HttpServletRequest request, int id) {
+		String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 		var rol = userDetails.getAuthorities().iterator().next().getAuthority();
 		if (!rol.equals("ADMIN"))
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-		Optional<Cuenta> optionalAccount = accountsRepository.findById(id);
+		Optional<Cuenta> optionalAccount = cuentaRepository.findById(id);
 		if (optionalAccount.isPresent()) {
 			Cuenta account = optionalAccount.get();
-			account.deactivate();
-			return ResponseEntity.ok(accountsRepository.save(account));
+			account.deactivar();
+			return ResponseEntity.ok(cuentaRepository.save(account));
 		}
 		return ResponseEntity.notFound().build();
 	}
 	
-	public ResponseEntity<Cuenta> activate(HttpServletRequest request, int id) {
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+	public ResponseEntity<Cuenta> activar(HttpServletRequest request, int id) {
+		String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 		var rol = userDetails.getAuthorities().iterator().next().getAuthority();
 		if (!rol.equals("ADMIN"))
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-		Optional<Cuenta> optionalAccount = accountsRepository.findById(id);
+		Optional<Cuenta> optionalAccount = cuentaRepository.findById(id);
 		if (optionalAccount.isPresent()) {
 			Cuenta account = optionalAccount.get();
-			account.activate();
-			return ResponseEntity.ok(accountsRepository.save(account));
+			account.activar();
+			return ResponseEntity.ok(cuentaRepository.save(account));
 		}
 		return ResponseEntity.notFound().build();
 	}
 
 	public ResponseEntity<Cuenta> getById(HttpServletRequest request, int accountId) {
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+		String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 		var rol = userDetails.getAuthorities().iterator().next().getAuthority();
 		Usuario user = usersRepository.findByEmail(email).get();
 
-		Optional<Cuenta> optionalAccount = accountsRepository.findById(accountId);
+		Optional<Cuenta> optionalAccount = cuentaRepository.findById(accountId);
 		if (optionalAccount.isPresent()) {
 			Cuenta account = optionalAccount.get();
-			if (!rol.equals("ADMIN") && !user.getAccounts().contains(account)) {
+			if (!rol.equals("ADMIN") && !user.getCuenta().contains(account)) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 			}
 			return ResponseEntity.ok(account);
@@ -130,12 +126,12 @@ public class ServicioCuenta {
 	}
 
     public ResponseEntity<List<Cuenta>> findAll(HttpServletRequest request) {
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+		String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 		var rol = userDetails.getAuthorities().iterator().next().getAuthority();
 		if (rol.equals("ADMIN")) {
-			return ResponseEntity.ok(accountsRepository.findAll());
+			return ResponseEntity.ok(cuentaRepository.findAll());
 		}
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }	

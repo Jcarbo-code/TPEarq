@@ -10,5 +10,5 @@ public class DtoFinViaje {
 	
 	public DtoFinViaje() {}
 
-	public double getDistance() {return distancia;}
+	public double getDistancia() {return distancia;}
 }

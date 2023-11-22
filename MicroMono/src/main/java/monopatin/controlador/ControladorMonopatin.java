@@ -23,58 +23,58 @@ import monopatin.dtos.DtoMonoDistancia;
 import monopatin.dtos.DtoMonoDuracion;
 
 @RestController
-@RequestMapping("/scooters")
+@RequestMapping("/monopatin")
 public class ControladorMonopatin {
 	@Autowired
-	private ServicioMonopatin scootersService;
+	private ServicioMonopatin monopatinService;
 	
 	@PostMapping
 	public ResponseEntity<Monopatin> create(HttpServletRequest request, @RequestBody DtoMonopatin dto) {
-		return scootersService.save(request, dto);
+		return monopatinService.save(request, dto);
 	}
 	
 	@GetMapping
 	public ResponseEntity<List<Monopatin>> findAll(HttpServletRequest request) {
-        return scootersService.findAll(request);
+        return monopatinService.findAll(request);
 	}
 	
 	@GetMapping("/{idMonopatin}")
 	public ResponseEntity<Monopatin> getById(HttpServletRequest request, @PathVariable int idMonopatin) {
-		return scootersService.getById(request, idMonopatin);
+		return monopatinService.getById(request, idMonopatin);
 	}
 	
-    @PatchMapping("/{idMonopatin}/startMantenimiento")
-    public ResponseEntity<Monopatin> startMantenimiento(HttpServletRequest request, @PathVariable int idMonopatin) {
-        return scootersService.startMantenimiento(request, idMonopatin);
+    @PatchMapping("/{idMonopatin}/darMantenimiento")
+    public ResponseEntity<Monopatin> darMantenimiento(HttpServletRequest request, @PathVariable int idMonopatin) {
+        return monopatinService.darMantenimiento(request, idMonopatin);
     }
     
     @PatchMapping("/{idMonopatin}/finishMantenimiento")
     public ResponseEntity<Monopatin> finishMantenimiento(HttpServletRequest request, @PathVariable int idMonopatin) {
-        return scootersService.finishMantenimiento(request, idMonopatin);
+        return monopatinService.finishMantenimiento(request, idMonopatin);
     }
     
     @DeleteMapping("/{idMonopatin}")
-    public ResponseEntity<String> removeScooter(HttpServletRequest request, @PathVariable int idMonopatin) {
-        return scootersService.removeScooter(request, idMonopatin);
+    public ResponseEntity<String> borrarMonopatin(HttpServletRequest request, @PathVariable int idMonopatin) {
+        return monopatinService.borrarMonopatin(request, idMonopatin);
     }  
     
     @GetMapping("/{idMonopatin}/currentStop")
     public ResponseEntity<Parada> currentStop(HttpServletRequest request, @PathVariable int idMonopatin) {
-    	return scootersService.currentStop(request, idMonopatin);
+    	return monopatinService.currentStop(request, idMonopatin);
     }
     
     @PatchMapping("/{idMonopatin}/updateLocation")
     public ResponseEntity<Monopatin> updateLocation(HttpServletRequest request, @PathVariable int idMonopatin, @RequestBody DtoUbicacion location) {
-    	return scootersService.updateLocation(request, idMonopatin, location);
+    	return monopatinService.updateLocation(request, idMonopatin, location);
     }
 
     @GetMapping("/orderedByDistance")
     public ResponseEntity<List<DtoMonoDistancia>> getOrderedByDistance(HttpServletRequest request) {
-		return scootersService.getOrderedByTotalDistance(request);
+		return monopatinService.getOrderedByDistanciaTotal(request);
     }
 
     @GetMapping("/orderedByTotalTime/{includePauses}")
     public ResponseEntity<List<DtoMonoDuracion>> getOrderedByTotalTime(HttpServletRequest request, @PathVariable boolean includePauses) {
-    	return scootersService.getOrderedByTotalTime(request, includePauses);
+    	return monopatinService.getOrderedByTotalTime(request, includePauses);
     }
 }

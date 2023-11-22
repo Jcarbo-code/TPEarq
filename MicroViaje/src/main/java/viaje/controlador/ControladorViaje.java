@@ -22,40 +22,40 @@ import viaje.repositorio.RepositorioViaje;
 import viaje.servicio.ServicioViaje;
 
 @RestController
-@RequestMapping("/rides")
+@RequestMapping("/viaje")
 public class ControladorViaje {
 	
 	@Autowired
-	RepositorioViaje ridesRepository;
+	RepositorioViaje RepositorioViaje;
 	
 	@Autowired
-	ServicioViaje ridesService;
+	ServicioViaje viajeService;
 	
 	@PostMapping
 	public ResponseEntity<Viaje> startRide(HttpServletRequest request, @RequestBody DtoInicioViaje dto) {
-		return ridesService.startRide(request, dto);
+		return viajeService.startRide(request, dto);
 	}
 	
 	@PatchMapping("/{rideId}/end")
 	public ResponseEntity<Viaje> endRide(HttpServletRequest request, @PathVariable int rideId, @RequestBody DtoFinViaje dto) {
-		return ridesService.endRide(request, rideId, dto);
+		return viajeService.endRide(request, rideId, dto);
 	}
 	
 	@GetMapping
 	public ResponseEntity<List<Viaje>> findAll(HttpServletRequest request) {
-		return ridesService.findAll(request);
+		return viajeService.findAll(request);
 	}
 	
-    @GetMapping("/scootersOrderedByDistance")
-    public ResponseEntity<List<DtoDistancia>> getScootersOrderedByDistance(HttpServletRequest request) {
-		return ridesService.getScootersOrderedByTotalDistance(request);
+    @GetMapping("/monopatinOrderedByDistance")
+    public ResponseEntity<List<DtoDistancia>> getMonopatinOrderedByDistance(HttpServletRequest request) {
+		return viajeService.getMonopatinOrderedByDistanciaTotal(request);
     }
     
-    @GetMapping("/scootersOrderedByTotalTime/{includePauses}")
-    public ResponseEntity<List<DtoDuracion>> getScootersOrderedByTotalTime(HttpServletRequest request, @PathVariable boolean includePauses) {
+    @GetMapping("/monopatinOrderedByTotalTime/{includePauses}")
+    public ResponseEntity<List<DtoDuracion>> getMonopatinOrderedByTotalTime(HttpServletRequest request, @PathVariable boolean includePauses) {
     	if (includePauses) {
-    		return ridesService.getScootersOrderedByTotalTime(request);
+    		return viajeService.getMonopatinOrderedByTotalTime(request);
     	}
-        return ridesService.getScootersOrderedByTotalTimeWithoutPauses(request);
+        return viajeService.getMonopatinOrderedByTotalTimeWithoutPauses(request);
     }
 }

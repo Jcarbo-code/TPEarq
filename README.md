@@ -6,3 +6,7 @@ puertos:
     configuracion: 8082
     monopatin: 8083
     mongodb: 8888
+
+Config -- mongo
+Cuenta -- testunit
+Cuenta -- swagger

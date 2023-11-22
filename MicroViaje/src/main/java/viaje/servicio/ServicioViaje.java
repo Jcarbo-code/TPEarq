@@ -38,18 +38,18 @@ import viaje.dtos.DtoInicioViaje;
 public class ServicioViaje {
 	
 	@Autowired
-	private RepositorioViaje ridesRepository;
+	private RepositorioViaje RepositorioViaje;
 	@Autowired
 	private ServicioAutenticidad authService;
 	
 	private HttpClient client = HttpClient.newHttpClient();
 
 	public ResponseEntity<Viaje> startRide(HttpServletRequest request, DtoInicioViaje dto) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		Usuarioi user = authService.getUserFromToken(token);
+		Usuarioi user = authService.getUsuario(token);
 		if (user == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -57,27 +57,27 @@ public class ServicioViaje {
 			return ResponseEntity.badRequest().build();
 		}
 
-		String currentStopResponse = httpGet("http://localhost:8083/scooters/" + dto.getIdMonopatin() + "/currentStop", token);
+		String currentStopResponse = httpGet("http://localhost:8083/monopatin/" + dto.getIdMonopatin() + "/currentStop", token);
 		if (currentStopResponse != null && !currentStopResponse.isEmpty()) {
-			return ResponseEntity.ok(ridesRepository.save(convertToEntity(dto, user.getId())));
+			return ResponseEntity.ok(RepositorioViaje.save(convertToEntity(dto, user.getId())));
 		}
 		return ResponseEntity.badRequest().build();
 	}
 	
 
 	public ResponseEntity<Viaje> endRide(HttpServletRequest request, int rideId, DtoFinViaje dto) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		Usuarioi user = authService.getUserFromToken(token);
+		Usuarioi user = authService.getUsuario(token);
 		if (user == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
 
 		//Verifica que el viaje exista
-		Optional<Viaje> optionalRide = ridesRepository.findById(rideId);
+		Optional<Viaje> optionalRide = RepositorioViaje.findById(rideId);
 		if (!optionalRide.isPresent()) {
 			return ResponseEntity.notFound().build();
 		}
@@ -87,18 +87,18 @@ public class ServicioViaje {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		//Verifica que el viaje no haya finalizado
-		if (ride.getEndTime() != null) {
+		if (ride.getFin() != null) {
 			return ResponseEntity.badRequest().build();
 		}
 		
-		boolean scooterIsInAStop = scooterIsInStop(ride.getIdMonopatin(), token);
-		if (!scooterIsInAStop) {
+		boolean monoEnParada = monoEnParada(ride.getIdMonopatin(), token);
+		if (!monoEnParada) {
 			return ResponseEntity.badRequest().build();
 		}
 		
 		//Obtiene las tarifas actuales
-		String standardPriceResponse = httpGet("http://localhost:8082/fares/currentStandardPrice", token);
-		String extendedPausePriceResponse = httpGet("http://localhost:8082/fares/currentExtendedPausePrice", token);
+		String standardPriceResponse = httpGet("http://localhost:8082/configuracion/currentStandardPrice", token);
+		String extendedPausePriceResponse = httpGet("http://localhost:8082/configuracion/currentExtendedPausePrice", token);
 		if (standardPriceResponse == null || extendedPausePriceResponse == null) {
 			return ResponseEntity.badRequest().build();
 		}
@@ -113,11 +113,11 @@ public class ServicioViaje {
 		LocalTime higherRateStartTime = null;
 		
 		for (Pausa pause : ride.getPauses()) {
-			Duration pauseDuration = Duration.between(pause.getStartTime(), pause.getEndTime());
+			Duration pauseDuration = Duration.between(pause.getInicio(), pause.getFin());
 			long pauseSeconds = pauseDuration.getSeconds();
 			
 			if (pauseSeconds > 900) {
-				LocalTime currentHigherRateStartTime = pause.getStartTime().plusMinutes(15);
+				LocalTime currentHigherRateStartTime = pause.getInicio().plusMinutes(15);
 				if (higherRateStartTime == null) {
 					higherRateStartTime = currentHigherRateStartTime;
 				} else if (currentHigherRateStartTime.isBefore(higherRateStartTime)) {
@@ -127,10 +127,10 @@ public class ServicioViaje {
 		}
 		
 		if (higherRateStartTime == null) {
-			Duration totalDuration = Duration.between(ride.getStartTime(), fin);
+			Duration totalDuration = Duration.between(ride.getInicio(), fin);
 			totalPrice += totalDuration.getSeconds() * tarifa;
 		} else {
-			Duration standardRateTime = Duration.between(ride.getStartTime().toLocalTime(), higherRateStartTime);
+			Duration standardRateTime = Duration.between(ride.getInicio().toLocalTime(), higherRateStartTime);
 			totalPrice += standardRateTime.getSeconds() * tarifa;
 			Duration higherRateTime = Duration.between(higherRateStartTime, fin);
 			totalPrice += higherRateTime.getSeconds() * tarifa2;
@@ -139,29 +139,29 @@ public class ServicioViaje {
 		
 		//Establece los valores del viaje
 		ride.setEndTime(fin);
-		ride.setDistance(dto.getDistance());
+		ride.setDistancia(dto.getDistancia());
 		ride.setPrice(totalPrice);
 		
 		//Cobra el servicio
-		boolean paidService = payService(totalPrice, token);
+		boolean paidService = pagar(totalPrice, token);
 		if (!paidService) {
 			return ResponseEntity.badRequest().build();
 		}
 		
 		//Guarda los cambios
-		return ResponseEntity.ok(ridesRepository.save(ride));
+		return ResponseEntity.ok(RepositorioViaje.save(ride));
 	}
 	
-	private boolean scooterIsInStop(int idMonopatin, String token)  {
-		String currentStopResponse = httpGet("http://localhost:8083/scooters/" + idMonopatin + "/currentStop", token);
+	private boolean monoEnParada(int idMonopatin, String token)  {
+		String currentStopResponse = httpGet("http://localhost:8083/monopatin/" + idMonopatin + "/currentStop", token);
 		if (currentStopResponse != null && !currentStopResponse.isEmpty()) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean payService(double precio, String token) {
-		String url = "http://localhost:8081/users/payService";
+	private boolean pagar(double precio, String token) {
+		String url = "http://localhost:8081/users/pagar";
 		String json = convertToJson(new DtoPago(precio));
 		
         HttpRequest request = HttpRequest.newBuilder()
@@ -196,66 +196,66 @@ public class ServicioViaje {
         return "";
 	}
 
-	public ResponseEntity<List<DtoDuracion>> getScootersOrderedByTotalTime(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+	public ResponseEntity<List<DtoDuracion>> getMonopatinOrderedByTotalTime(HttpServletRequest request) {
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null || (rol != null && rol.equals("USER"))) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
-	    List<Viaje> rides = ridesRepository.findAll();
-	    Map<Integer, Long> scooterTotalTimeMap = new HashMap<>();
-	    for (Viaje ride : rides) {
+	    List<Viaje> viaje = RepositorioViaje.findAll();
+	    Map<Integer, Long> tiempoTotalMono = new HashMap<>();
+	    for (Viaje ride : viaje) {
 	    	Integer idMonopatin = ride.getIdMonopatin();
-			long rideDurationInSeconds = calculateDurationInSeconds(ride.getStartTime().toLocalTime(), ride.getEndTime().toLocalTime());
-			long currentScooterTime = scooterTotalTimeMap.getOrDefault(idMonopatin, 0L);
-			scooterTotalTimeMap.put(ride.getIdMonopatin(), rideDurationInSeconds + currentScooterTime);
+			long rideDurationInSeconds = calculateDurationInSeconds(ride.getInicio().toLocalTime(), ride.getFin().toLocalTime());
+			long tiempoMono = tiempoTotalMono.getOrDefault(idMonopatin, 0L);
+			tiempoTotalMono.put(ride.getIdMonopatin(), rideDurationInSeconds + tiempoMono);
 		}
-	    List<DtoDuracion> scootersDtos = new ArrayList<>();
-	    for (Map.Entry<Integer, Long> entry : scooterTotalTimeMap.entrySet()) {
-			scootersDtos.add(new DtoDuracion(entry.getKey(), entry.getValue()));
+	    List<DtoDuracion> monopatinDtos = new ArrayList<>();
+	    for (Map.Entry<Integer, Long> entry : tiempoTotalMono.entrySet()) {
+			monopatinDtos.add(new DtoDuracion(entry.getKey(), entry.getValue()));
 		}
 	    
-	    return ResponseEntity.ok(scootersDtos);
+	    return ResponseEntity.ok(monopatinDtos);
 	}
 
-	public ResponseEntity<List<DtoDuracion>> getScootersOrderedByTotalTimeWithoutPauses(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+	public ResponseEntity<List<DtoDuracion>> getMonopatinOrderedByTotalTimeWithoutPauses(HttpServletRequest request) {
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null || (rol != null && rol.equals("USER"))) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
-	    List<Viaje> rides = ridesRepository.findAll();
-	    Map<Integer, Long> scooterTotalTimeMap = new HashMap<>();
+	    List<Viaje> viaje = RepositorioViaje.findAll();
+	    Map<Integer, Long> tiempoTotalMono = new HashMap<>();
 	    
-	    for (Viaje ride : rides) {
+	    for (Viaje ride : viaje) {
 	    	Integer idMonopatin = ride.getIdMonopatin();
-	    	long rideDurationInSeconds = calculateDurationInSeconds(ride.getStartTime().toLocalTime(), ride.getEndTime().toLocalTime());
-			long currentScooterTime = scooterTotalTimeMap.getOrDefault(idMonopatin, 0L);
+	    	long rideDurationInSeconds = calculateDurationInSeconds(ride.getInicio().toLocalTime(), ride.getFin().toLocalTime());
+			long tiempoMono = tiempoTotalMono.getOrDefault(idMonopatin, 0L);
 			
 			long totalPauseSeconds = 0;
 			for (Pausa pause : ride.getPauses()) {
-				if (pause.getEndTime() != null) {
-					long pauseDurationInSeconds = calculateDurationInSeconds(pause.getStartTime(), pause.getEndTime());
+				if (pause.getFin() != null) {
+					long pauseDurationInSeconds = calculateDurationInSeconds(pause.getInicio(), pause.getFin());
 					totalPauseSeconds += pauseDurationInSeconds;
 				}
 			}
 			
-			scooterTotalTimeMap.put(ride.getIdMonopatin(), currentScooterTime + rideDurationInSeconds - totalPauseSeconds);
+			tiempoTotalMono.put(ride.getIdMonopatin(), tiempoMono + rideDurationInSeconds - totalPauseSeconds);
 		}
 	    
-	    List<DtoDuracion> scootersDtos = new ArrayList<>();
-	    for (Map.Entry<Integer, Long> entry : scooterTotalTimeMap.entrySet()) {
-			scootersDtos.add(new DtoDuracion(entry.getKey(), entry.getValue()));
+	    List<DtoDuracion> monopatinDtos = new ArrayList<>();
+	    for (Map.Entry<Integer, Long> entry : tiempoTotalMono.entrySet()) {
+			monopatinDtos.add(new DtoDuracion(entry.getKey(), entry.getValue()));
 		}
-	    return ResponseEntity.ok(scootersDtos);
+	    return ResponseEntity.ok(monopatinDtos);
 	}
 	
 	private long calculateDurationInSeconds(LocalTime inicio, LocalTime fin) {
@@ -265,27 +265,27 @@ public class ServicioViaje {
 
 
     public ResponseEntity<List<Viaje>> findAll(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol != null && (rol.equals("ADMIN") || rol.equals("Mantenimiento"))) {
-			return ResponseEntity.ok(ridesRepository.findAll());
+			return ResponseEntity.ok(RepositorioViaje.findAll());
 		}
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
 
-    public ResponseEntity<List<DtoDistancia>> getScootersOrderedByTotalDistance(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+    public ResponseEntity<List<DtoDistancia>> getMonopatinOrderedByDistanciaTotal(HttpServletRequest request) {
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol != null && (rol.equals("ADMIN") || rol.equals("Mantenimiento"))) {
-			List<DtoDistancia> scooters = ridesRepository.getScootersOrderedByTotalDistance();
-			return ResponseEntity.ok(scooters);
+			List<DtoDistancia> monopatin = RepositorioViaje.getMonopatinOrderedByDistanciaTotal();
+			return ResponseEntity.ok(monopatin);
 		}
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }

@@ -29,7 +29,7 @@ public class Jwt extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        final String token = getTokenFromRequest(request);
+        final String token = getToken(request);
         final String username;
 
         if (token == null) {
@@ -50,7 +50,7 @@ public class Jwt extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
     
-    public String getTokenFromRequest(HttpServletRequest request) {
+    public String getToken(HttpServletRequest request) {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer "))

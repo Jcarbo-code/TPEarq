@@ -16,29 +16,29 @@ import config.servicio.ServicioConfig;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/fares")
+@RequestMapping("/configuracion")
 public class ControladorConfig {
 
 	@Autowired
-	private ServicioConfig fareService;
+	private ServicioConfig configuracionService;
 	
 	@PostMapping
 	public ResponseEntity<Config> create(HttpServletRequest request, @RequestBody DtoPrecios dto) {
-		return fareService.save(request, dto);
+		return configuracionService.save(request, dto);
 	}
 	
 	@GetMapping("/currentStandardPrice")
 	public ResponseEntity<Double> getCurrentStandardPrice(HttpServletRequest request) {
-		return fareService.getCurrentStandardPrice(request);
+		return configuracionService.getCurrentStandardPrice(request);
 	}
 	
 	@GetMapping("/currentExtendedPausePrice")
 	public ResponseEntity<Double> getCurrentExtendedPausePrice(HttpServletRequest request) {
-		return fareService.getCurrentExtendedPausePrice(request);
+		return configuracionService.getCurrentExtendedPausePrice(request);
 	}
     
     @GetMapping
     public ResponseEntity<List<Config>> findAll(HttpServletRequest request) {
-		return fareService.findAll(request);
+		return configuracionService.findAll(request);
     }
 }

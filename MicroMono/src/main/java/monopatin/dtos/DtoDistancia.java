@@ -2,12 +2,12 @@ package monopatin.dtos;
 
 public class DtoDistancia {
     private Integer id;
-	private double totalDistance;
+	private double DistanciaTotal;
     public DtoDistancia() {
     }
-    public DtoDistancia(Integer id, double totalDistance) {
+    public DtoDistancia(Integer id, double DistanciaTotal) {
         this.id = id;
-        this.totalDistance = totalDistance;
+        this.DistanciaTotal = DistanciaTotal;
     }
     public Integer getId() {
         return id;
@@ -15,10 +15,10 @@ public class DtoDistancia {
     public void setId(Integer id) {
         this.id = id;
     }
-    public double getTotalDistance() {
-        return totalDistance;
+    public double getDistanciaTotal() {
+        return DistanciaTotal;
     }
-    public void setTotalDistance(double totalDistance) {
-        this.totalDistance = totalDistance;
+    public void setDistanciaTotal(double DistanciaTotal) {
+        this.DistanciaTotal = DistanciaTotal;
     }
 }

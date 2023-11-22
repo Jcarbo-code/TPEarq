@@ -9,6 +9,6 @@ import viaje.dtos.DtoDistancia;
 import viaje.modelo.Viaje;
 
 public interface RepositorioViaje extends JpaRepository<Viaje, Integer> {
-    @Query("SELECT NEW rides.dtos.ScooterWithDistanceDto(r.idMonopatin, SUM(r.distancia)) FROM Ride r GROUP BY r.idMonopatin ORDER BY SUM(r.distancia) DESC")
-    List<DtoDistancia> getScootersOrderedByTotalDistance();
+    @Query("SELECT NEW viaje.dtos.DtoDistancia(r.idMonopatin, SUM(r.distancia)) FROM Ride r GROUP BY r.idMonopatin ORDER BY SUM(r.distancia) DESC")
+    List<DtoDistancia> getMonopatinOrderedByDistanciaTotal();
 }

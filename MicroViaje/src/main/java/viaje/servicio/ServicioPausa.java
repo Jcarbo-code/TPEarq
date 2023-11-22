@@ -23,27 +23,27 @@ public class ServicioPausa {
 	@Autowired
 	private RepositorioPausa pausesRepository;
 	@Autowired
-	private RepositorioViaje ridesRepository;
+	private RepositorioViaje RepositorioViaje;
 	@Autowired
 	private ServicioAutenticidad authService;
 
 	public ResponseEntity<Pausa> startPause(HttpServletRequest request, DtoPausa dto) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		Usuarioi user = authService.getUserFromToken(token);
+		Usuarioi user = authService.getUsuario(token);
 		if (user == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
-		Optional<Viaje> optionalRide = ridesRepository.findById(dto.getRideId());
+		Optional<Viaje> optionalRide = RepositorioViaje.findById(dto.getRideId());
 		if (optionalRide.isPresent()) {
 			Viaje ride = optionalRide.get();
 			if (ride.getUserId() != user.getId()) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 			}
-			if (ride.getEndTime() != null) {
+			if (ride.getFin() != null) {
 				return ResponseEntity.badRequest().build();
 			}
 			Pausa pause = new Pausa(LocalTime.now(), ride);
@@ -53,11 +53,11 @@ public class ServicioPausa {
 	}
 
 	public ResponseEntity<Pausa> endPause(HttpServletRequest request, int pauseId) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		Usuarioi user = authService.getUserFromToken(token);
+		Usuarioi user = authService.getUsuario(token);
 		if (user == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -76,11 +76,11 @@ public class ServicioPausa {
 	}
 
 	public ResponseEntity<List<Pausa>> findAll(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol != null && (rol.equals("ADMIN") || rol.equals("Mantenimiento"))) {
 			return ResponseEntity.ok(pausesRepository.findAll());
 		}

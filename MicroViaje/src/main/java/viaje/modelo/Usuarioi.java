@@ -9,16 +9,16 @@ public class Usuarioi {
     private String celular;
     private String clave;
     private String rol;
-    private List<Cuenta> accounts;
+    private List<Cuenta> cuenta;
     
-    public Usuarioi(int id, String nombre, String email, String celular, String clave, String rol, List<Cuenta> accounts) {
+    public Usuarioi(int id, String nombre, String email, String celular, String clave, String rol, List<Cuenta> cuenta) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
         this.celular = celular;
         this.clave = clave;
         this.rol = rol;
-        this.accounts = accounts;
+        this.cuenta = cuenta;
     }
 
     public Usuarioi() {
@@ -48,15 +48,15 @@ public class Usuarioi {
         return rol;
     }
 
-    public List<Cuenta> getAccounts() {
-        return accounts;
+    public List<Cuenta> getCuenta() {
+        return cuenta;
     }
 
     public void setId(int id) {
         this.id = id;
     }
 
-    public void setName(String nombre) {
+    public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
@@ -64,7 +64,7 @@ public class Usuarioi {
         this.email = email;
     }
 
-    public void setPhone(String celular) {
+    public void setCelular(String celular) {
         this.celular = celular;
     }
 
@@ -72,11 +72,11 @@ public class Usuarioi {
         this.clave = clave;
     }
 
-    public void setRole(String rol) {
+    public void setRol(String rol) {
         this.rol = rol;
     }
 
-    public void setAccounts(List<Cuenta> accounts) {
-        this.accounts = accounts;
+    public void setCuenta(List<Cuenta> cuenta) {
+        this.cuenta = cuenta;
     }       
 }

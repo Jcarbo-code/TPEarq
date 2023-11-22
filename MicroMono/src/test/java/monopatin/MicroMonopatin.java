@@ -1,10 +1,10 @@
-package rides;
+package monopatin;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class RidesApplicationTests {
+class MicroMonopatin {
 
 	@Test
 	void contextLoads() {

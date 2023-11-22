@@ -61,7 +61,7 @@ public class ServicioAutenticidad {
     }
 
     public Boolean isTokenValid(HttpServletRequest request) {
-        String token = authenticationFilter.getTokenFromRequest(request);
+        String token = authenticationFilter.getToken(request);
         if (token == null)
             return false;
         try {

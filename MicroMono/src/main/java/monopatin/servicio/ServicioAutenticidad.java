@@ -18,7 +18,7 @@ public class ServicioAutenticidad {
 
     private HttpClient client = HttpClient.newHttpClient();
 
-    public String getTokenFromRequest(HttpServletRequest request) {
+    public String getToken(HttpServletRequest request) {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer "))
             return authHeader.substring(7);
@@ -45,7 +45,7 @@ public class ServicioAutenticidad {
         }
     }
 
-    public String getRoleFromToken(String token) {
+    public String getRol(String token) {
         String url = "http://localhost:8081/users/getRol";
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(url))

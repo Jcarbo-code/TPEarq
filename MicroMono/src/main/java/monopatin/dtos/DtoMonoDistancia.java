@@ -8,19 +8,19 @@ public class DtoMonoDistancia {
 	private double latitud;
 	private double longitud;
 	private LocalDate ultimoMantenimiento;
-    private double totalDistance;
+    private double DistanciaTotal;
     
     public DtoMonoDistancia() {
     }
 
     public DtoMonoDistancia(int id, String estado, double latitud, double longitud,
-            LocalDate ultimoMantenimiento, double totalDistance) {
+            LocalDate ultimoMantenimiento, double DistanciaTotal) {
         this.id = id;
         this.estado = estado;
         this.latitud = latitud;
         this.longitud = longitud;
         this.ultimoMantenimiento = ultimoMantenimiento;
-        this.totalDistance = totalDistance;
+        this.DistanciaTotal = DistanciaTotal;
     }
 
     public int getId() {
@@ -63,11 +63,11 @@ public class DtoMonoDistancia {
         this.ultimoMantenimiento = ultimoMantenimiento;
     }
 
-    public double getTotalDistance() {
-        return totalDistance;
+    public double getDistanciaTotal() {
+        return DistanciaTotal;
     }
 
-    public void setTotalDistance(double totalDistance) {
-        this.totalDistance = totalDistance;
+    public void setDistanciaTotal(double DistanciaTotal) {
+        this.DistanciaTotal = DistanciaTotal;
     }
 }

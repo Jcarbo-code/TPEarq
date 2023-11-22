@@ -27,7 +27,7 @@ public class ServicioUsuario {
 	@Autowired
 	private RepositorioUsuario usersRepository;
 	@Autowired
-	private RepositorioCuenta accountsRepository;
+	private RepositorioCuenta cuentaRepository;
 	@Autowired
 	private Jwt jwtAuthenticationFilter;
 	@Autowired
@@ -38,34 +38,34 @@ public class ServicioUsuario {
 	AuthenticationManager authManager;
 
     public ResponseEntity<Usuario> linkNewAccount(HttpServletRequest request, DtoCuenta dto) {
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+		String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
         Usuario user = usersRepository.findByEmail(email).get();
 
 		Cuenta account = new Cuenta(dto.getFechaAlta(), dto.getSaldo(), dto.getMercadoPagoId());
-		accountsRepository.save(account);
+		cuentaRepository.save(account);
 		user.addAccount(account);
 		return ResponseEntity.ok(usersRepository.save(user));
     }
 
 	public ResponseEntity<Usuario> linkAccount(HttpServletRequest request, Integer accountId) {
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+		String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
         Usuario user = usersRepository.findByEmail(email).get();
 
-		Optional<Cuenta> optionalAccount = accountsRepository.findById(accountId);
+		Optional<Cuenta> optionalAccount = cuentaRepository.findById(accountId);
 		if (!optionalAccount.isPresent())
 			return ResponseEntity.notFound().build();
 		
 		Cuenta account = optionalAccount.get();
-		if (user.getAccounts().contains(account))
+		if (user.getCuenta().contains(account))
 			return ResponseEntity.badRequest().build();
 		user.addAccount(account);
 		return ResponseEntity.ok(usersRepository.save(user));
 	}
 
     public ResponseEntity<List<Usuario>> findAll(HttpServletRequest request) {
-        String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+        String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 		var rol = userDetails.getAuthorities().iterator().next().getAuthority();
@@ -76,7 +76,7 @@ public class ServicioUsuario {
     }
 
     public ResponseEntity<DtoUsuarioCuenta> getUserByToken(HttpServletRequest request) {
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+		String token = jwtAuthenticationFilter.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -90,11 +90,11 @@ public class ServicioUsuario {
 
     private DtoUsuarioCuenta convertToDto(Usuario user) {
 		return new DtoUsuarioCuenta(user.getId(), user.getNombre(), user.getEmail(),
-		user.getCelular(), user.getPassword(), user.getRol(), user.getAccounts());
+		user.getCelular(), user.getPassword(), user.getRol(), user.getCuenta());
 	}
 
 	public ResponseEntity<Boolean> canStartRide(HttpServletRequest request) {
-        String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+        String token = jwtAuthenticationFilter.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -104,7 +104,7 @@ public class ServicioUsuario {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 		Usuario user = optionalUser.get();
-		for (Cuenta account : user.getAccounts()) {
+		for (Cuenta account : user.getCuenta()) {
 			if (account.getSaldo() > 0 && account. getAnulada()) {
 				return ResponseEntity.ok(true);
 			}
@@ -112,21 +112,21 @@ public class ServicioUsuario {
 		return ResponseEntity.ok(false);
     }
 
-    public ResponseEntity<Cuenta> payService(HttpServletRequest request, DtoPago dto) {
-		String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+    public ResponseEntity<Cuenta> pagar(HttpServletRequest request, DtoPago dto) {
+		String token = jwtAuthenticationFilter.getToken(request);
         String email = jwtService.getUsernameFromToken(token);
 		Usuario user = usersRepository.findByEmail(email).get();
-		for (Cuenta account : user.getAccounts()) {
+		for (Cuenta account : user.getCuenta()) {
 			if (account. getAnulada() && account.getSaldo() > 0) {
-				account.payService(dto.getPrice());
-				return ResponseEntity.ok(accountsRepository.save(account));
+				account.pagar(dto.getPrice());
+				return ResponseEntity.ok(cuentaRepository.save(account));
 			}
 		}
 		return ResponseEntity.badRequest().build();
     }
 
     public ResponseEntity<String> getRol(HttpServletRequest request) {
-        String token = jwtAuthenticationFilter.getTokenFromRequest(request);
+        String token = jwtAuthenticationFilter.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}

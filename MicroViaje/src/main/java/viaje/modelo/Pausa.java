@@ -37,8 +37,8 @@ public class Pausa {
 	public Pausa() {}
 
 	public int getId() {return id;}
-	public LocalTime getStartTime() {return inicio;}
-	public LocalTime getEndTime() {return fin;}
+	public LocalTime getInicio() {return inicio;}
+	public LocalTime getFin() {return fin;}
     public Viaje getRide() {return ride;}
     
     public void setRide(Viaje ride) {this.ride = ride;}

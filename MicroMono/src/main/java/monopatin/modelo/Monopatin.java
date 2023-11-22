@@ -27,7 +27,7 @@ public class Monopatin {
 	private LocalDate ultimoMantenimiento;
 
 	public Monopatin(double latitud, double longitud, LocalDate ultimoMantenimiento) {
-		this.estado = "libre";
+		this.estado = "Libre";
 		this.latitud = latitud;
 		this.longitud = longitud;
 		this.ultimoMantenimiento = ultimoMantenimiento;

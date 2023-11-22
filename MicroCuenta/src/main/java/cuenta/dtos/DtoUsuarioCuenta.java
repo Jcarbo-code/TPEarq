@@ -11,17 +11,17 @@ public class DtoUsuarioCuenta {
     private String celular;
     private String clave;
     private String rol;
-    private Set<Cuenta> accounts;
+    private Set<Cuenta> cuenta;
 
     public DtoUsuarioCuenta(int id, String nombre, String email, String celular, String clave, String rol,
-            Set<Cuenta> accounts) {
+            Set<Cuenta> cuenta) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
         this.celular = celular;
         this.clave = clave;
         this.rol = rol;
-        this.accounts = accounts;
+        this.cuenta = cuenta;
     }
 
     public DtoUsuarioCuenta() {}
@@ -50,7 +50,7 @@ public class DtoUsuarioCuenta {
         return rol;
     }
 
-    public Set<Cuenta> getAccounts() {
-        return accounts;
+    public Set<Cuenta> getcuenta() {
+        return cuenta;
     }   
 }

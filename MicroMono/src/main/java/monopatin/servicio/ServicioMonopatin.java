@@ -33,7 +33,7 @@ import monopatin.dtos.DtoDuracion;
 public class ServicioMonopatin {
 	
 	@Autowired
-	private RepositorioMonopatin scootersRepository;
+	private RepositorioMonopatin monopatinRepository;
 	@Autowired
 	private RepositorioParada stopsRepository;
 	@Autowired
@@ -41,86 +41,86 @@ public class ServicioMonopatin {
 	private HttpClient client = HttpClient.newHttpClient();
 	
 	public ResponseEntity<Monopatin> save(HttpServletRequest request, DtoMonopatin dto) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol != null && rol.equals("ADMIN")) {
-			return ResponseEntity.ok(scootersRepository.save(convertToEntity(dto)));
+			return ResponseEntity.ok(monopatinRepository.save(convertToEntity(dto)));
 		}
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 	}
     
-	public ResponseEntity<Monopatin> startMantenimiento(HttpServletRequest request, int idMonopatin) {
-		String token = authService.getTokenFromRequest(request);
+	public ResponseEntity<Monopatin> darMantenimiento(HttpServletRequest request, int idMonopatin) {
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		} else if (!rol.equals("Mantenimiento")) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
-        Optional<Monopatin> scooterOptional = scootersRepository.findById(idMonopatin);
-        if (scooterOptional.isPresent()) {
-            Monopatin scooter = scooterOptional.get();
-            if (scooter.getEstado().equals("Mantenimiento")) {
+        Optional<Monopatin> monoPureba = monopatinRepository.findById(idMonopatin);
+        if (monoPureba.isPresent()) {
+            Monopatin monopatin = monoPureba.get();
+            if (monopatin.getEstado().equals("Mantenimiento")) {
         		return ResponseEntity.badRequest().build();
             }
-            scooter.setEstado("Mantenimiento");
-            return ResponseEntity.ok(scootersRepository.save(scooter));
+            monopatin.setEstado("Mantenimiento");
+            return ResponseEntity.ok(monopatinRepository.save(monopatin));
         }
         return ResponseEntity.notFound().build();
 	}
 	
 	public ResponseEntity<Monopatin> finishMantenimiento(HttpServletRequest request, int idMonopatin) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		} else if (!rol.equals("Mantenimiento")) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
-        Optional<Monopatin> scooterOptional = scootersRepository.findById(idMonopatin);
-        if (scooterOptional.isPresent()) {
-            Monopatin scooter = scooterOptional.get();
-            if (!scooter.getEstado().equals("Mantenimiento")) {
+        Optional<Monopatin> monoPureba = monopatinRepository.findById(idMonopatin);
+        if (monoPureba.isPresent()) {
+            Monopatin monopatin = monoPureba.get();
+            if (!monopatin.getEstado().equals("Mantenimiento")) {
         		return ResponseEntity.badRequest().build();
             }
-            scooter.setEstado("libre");
-            scooter.setUltimoMantenimiento(LocalDate.now());
-            return ResponseEntity.ok(scootersRepository.save(scooter));
+            monopatin.setEstado("Libre");
+            monopatin.setUltimoMantenimiento(LocalDate.now());
+            return ResponseEntity.ok(monopatinRepository.save(monopatin));
         }
         return ResponseEntity.notFound().build();
 	}
     
-	public ResponseEntity<String> removeScooter(HttpServletRequest request, int idMonopatin) {
-		String token = authService.getTokenFromRequest(request);
+	public ResponseEntity<String> borrarMonopatin(HttpServletRequest request, int idMonopatin) {
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		} else if (!rol.equals("ADMIN")) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		
-        Optional<Monopatin> scooterOptional = scootersRepository.findById(idMonopatin);
-        if (scooterOptional.isPresent()) {
-            Monopatin scooter = scooterOptional.get();
-            if (scooter.getEstado().equals("in-use")) {
+        Optional<Monopatin> monoPureba = monopatinRepository.findById(idMonopatin);
+        if (monoPureba.isPresent()) {
+            Monopatin monopatin = monoPureba.get();
+            if (monopatin.getEstado().equals("in-use")) {
             	return ResponseEntity.badRequest().build();
             }
-            scootersRepository.deleteById(idMonopatin);
-            return ResponseEntity.ok("Scooter removed successfully");
+            monopatinRepository.deleteById(idMonopatin);
+            return ResponseEntity.ok("eliminado");
         }
         return ResponseEntity.notFound().build();
 	}
@@ -130,7 +130,7 @@ public class ServicioMonopatin {
 	}
 
 	public ResponseEntity<Monopatin> getById(HttpServletRequest request, int idMonopatin) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -138,15 +138,15 @@ public class ServicioMonopatin {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
-		Optional<Monopatin> scooterOptional = scootersRepository.findById(idMonopatin);
-        if (scooterOptional.isPresent()) {
-            return ResponseEntity.ok(scooterOptional.get());
+		Optional<Monopatin> monoPureba = monopatinRepository.findById(idMonopatin);
+        if (monoPureba.isPresent()) {
+            return ResponseEntity.ok(monoPureba.get());
         }
         return ResponseEntity.notFound().build();
 	}
 
 	public ResponseEntity<Parada> currentStop(HttpServletRequest request, int idMonopatin) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -154,31 +154,31 @@ public class ServicioMonopatin {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
-		Optional<Monopatin> optionalScooter = scootersRepository.findById(idMonopatin);
-		if (!optionalScooter.isPresent()) {
+		Optional<Monopatin> monoPureba = monopatinRepository.findById(idMonopatin);
+		if (!monoPureba.isPresent()) {
 			return ResponseEntity.notFound().build();
 		}
-		Monopatin scooter = optionalScooter.get();
+		Monopatin monopatin = monoPureba.get();
 		List<Parada> stops = stopsRepository.findAll();
 		for (Parada stop : stops) {
-			if (locationIsWithinStop(scooter, stop)) {
+			if (locationIsWithinStop(monopatin, stop)) {
 				return ResponseEntity.ok(stop);
 			}
 		}
 		return ResponseEntity.ok(null);
 	}
 
-	private boolean locationIsWithinStop(Monopatin scooter, Parada stop) {
+	private boolean locationIsWithinStop(Monopatin monopatin, Parada stop) {
 		// The tolerance degrees used roughly equate to 111 meters
 		double tolerance = 0.001;
-		double latDiff = Math.abs(scooter.getLatitud() - stop.getLatitud());
-		double lonDiff = Math.abs(scooter.getLongitud() - stop.getLongitud());
+		double latDiff = Math.abs(monopatin.getLatitud() - stop.getLatitud());
+		double lonDiff = Math.abs(monopatin.getLongitud() - stop.getLongitud());
 		
 		return latDiff <= tolerance && lonDiff <= tolerance;
 	}
 
 	public ResponseEntity<Monopatin> updateLocation(HttpServletRequest request, int idMonopatin, DtoUbicacion location) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -186,71 +186,71 @@ public class ServicioMonopatin {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 	
-		Optional<Monopatin> optionalScooter = scootersRepository.findById(idMonopatin);
-		if (!optionalScooter.isPresent()) {
+		Optional<Monopatin> monoPureba = monopatinRepository.findById(idMonopatin);
+		if (!monoPureba.isPresent()) {
 			return ResponseEntity.notFound().build();
 		}
-		Monopatin scooter = optionalScooter.get();
-		scooter.setLatitud(location.getLatitud());
-		scooter.setLongitud(location.getLongitud());
-		return ResponseEntity.ok(scootersRepository.save(scooter));
+		Monopatin monopatin = monoPureba.get();
+		monopatin.setLatitud(location.getLatitud());
+		monopatin.setLongitud(location.getLongitud());
+		return ResponseEntity.ok(monopatinRepository.save(monopatin));
 	}
 
 	public ResponseEntity<List<Monopatin>> findAll(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol != null && (rol.equals("ADMIN") || rol.equals("Mantenimiento"))) {
-			return ResponseEntity.ok(scootersRepository.findAll());
+			return ResponseEntity.ok(monopatinRepository.findAll());
 		}
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 	}
 
-    public ResponseEntity<List<DtoMonoDistancia>> getOrderedByTotalDistance(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+    public ResponseEntity<List<DtoMonoDistancia>> getOrderedByDistanciaTotal(HttpServletRequest request) {
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		} else if (!rol.equals("Mantenimiento")) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
-		String url = "http://localhost:8080/rides/scootersOrderedByDistance";
-        HttpRequest scootersRequest = HttpRequest.newBuilder()
+		String url = "http://localhost:8080/viaje/monopatinOrderedByDistance";
+        HttpRequest monopatinRequest = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .header("Authorization", "Bearer " + token)
             .build();
 
 		try {
-			HttpResponse<String> response = client.send(scootersRequest, HttpResponse.BodyHandlers.ofString());
+			HttpResponse<String> response = client.send(monopatinRequest, HttpResponse.BodyHandlers.ofString());
 			if (response.statusCode() == 200) {
                 String responseBody = response.body();
                 ObjectMapper objectMapper = new ObjectMapper();
- 				List<DtoDistancia> distanceDtoList = objectMapper.readValue(responseBody, new TypeReference<List<DtoDistancia>>() {});
-				List<DtoMonoDistancia> scootersWithDistance = new ArrayList<>();
+ 				List<DtoDistancia> distancias = objectMapper.readValue(responseBody, new TypeReference<List<DtoDistancia>>() {});
+				List<DtoMonoDistancia> MonoDistancia = new ArrayList<>();
 
-				//Maps the List obtained from Rides service to another List with Scooter data
-				for (DtoDistancia dto : distanceDtoList) {
-					Optional<Monopatin> optionalScooter = scootersRepository.findById(dto.getId());
-					if (optionalScooter.isPresent()) {
-						Monopatin scooter = optionalScooter.get();
-						scootersWithDistance.add(new DtoMonoDistancia(scooter.getId(), scooter.getEstado(), scooter.getLatitud(),
-							scooter.getLongitud(), scooter.getUltimoMantenimiento(), dto.getTotalDistance()));
+				//Maps the List obtained from viaje service to another List with monopatin data
+				for (DtoDistancia dto : distancias) {
+					Optional<Monopatin> monoPureba = monopatinRepository.findById(dto.getId());
+					if (monoPureba.isPresent()) {
+						Monopatin monopatin = monoPureba.get();
+						MonoDistancia.add(new DtoMonoDistancia(monopatin.getId(), monopatin.getEstado(), monopatin.getLatitud(),
+							monopatin.getLongitud(), monopatin.getUltimoMantenimiento(), dto.getDistanciaTotal()));
 					}
 				}
-				//Add Scooters that have not rides to return list
-				for (Monopatin scooter : scootersRepository.findAll()) {
-					if (!distanceDtoList.stream().anyMatch(s -> s.getId() == scooter.getId())) {
-						scootersWithDistance.add(new DtoMonoDistancia(scooter.getId(), scooter.getEstado(), scooter.getLatitud(),
-						scooter.getLongitud(), scooter.getUltimoMantenimiento(), 0));
+				//Add monopatin that have not viaje to return list
+				for (Monopatin monopatin : monopatinRepository.findAll()) {
+					if (!distancias.stream().anyMatch(s -> s.getId() == monopatin.getId())) {
+						MonoDistancia.add(new DtoMonoDistancia(monopatin.getId(), monopatin.getEstado(), monopatin.getLatitud(),
+						monopatin.getLongitud(), monopatin.getUltimoMantenimiento(), 0));
 					}
 				}
-				return ResponseEntity.ok(scootersWithDistance);
+				return ResponseEntity.ok(MonoDistancia);
 			}
 			return ResponseEntity.badRequest().build();
 		} catch (Exception e) {
@@ -259,47 +259,47 @@ public class ServicioMonopatin {
     }
 
     public ResponseEntity<List<DtoMonoDuracion>> getOrderedByTotalTime(HttpServletRequest request, boolean includePauses) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		} else if (!rol.equals("Mantenimiento")) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
-		String url = "http://localhost:8080/rides/scootersOrderedByTotalTime/" + includePauses;
-        HttpRequest scootersRequest = HttpRequest.newBuilder()
+		String url = "http://localhost:8080/viaje/monopatinOrderedByTotalTime/" + includePauses;
+        HttpRequest monopatinRequest = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .header("Authorization", "Bearer " + token)
             .build();
 
 		try {
-			HttpResponse<String> response = client.send(scootersRequest, HttpResponse.BodyHandlers.ofString());
+			HttpResponse<String> response = client.send(monopatinRequest, HttpResponse.BodyHandlers.ofString());
 			if (response.statusCode() == 200) {
                 String responseBody = response.body();
                 ObjectMapper objectMapper = new ObjectMapper();
  				List<DtoDuracion> timeDtoList = objectMapper.readValue(responseBody, new TypeReference<List<DtoDuracion>>() {});
-				List<DtoMonoDuracion> scootersWithTime = new ArrayList<>();
-				//Maps the List obtained from Rides service to another List with Scooter data
+				List<DtoMonoDuracion> monopatinWithTime = new ArrayList<>();
+				//Maps the List obtained from viaje service to another List with monopatin data
 				for (DtoDuracion dto : timeDtoList) {
-					Optional<Monopatin> optionalScooter = scootersRepository.findById(dto.getIdMonopatin());
-					if (optionalScooter.isPresent()) {
-						Monopatin scooter = optionalScooter.get();
-						scootersWithTime.add(new DtoMonoDuracion(scooter.getId(), scooter.getEstado(), scooter.getLatitud(),
-							scooter.getLongitud(), scooter.getUltimoMantenimiento(), dto.getTotalTimeSeconds()));
+					Optional<Monopatin> monoPureba = monopatinRepository.findById(dto.getIdMonopatin());
+					if (monoPureba.isPresent()) {
+						Monopatin monopatin = monoPureba.get();
+						monopatinWithTime.add(new DtoMonoDuracion(monopatin.getId(), monopatin.getEstado(), monopatin.getLatitud(),
+							monopatin.getLongitud(), monopatin.getUltimoMantenimiento(), dto.getTotalTimeSeconds()));
 					}
 				}
-				//Add Scooters that have not rides to return list
-				for (Monopatin scooter : scootersRepository.findAll()) {
-					if (!timeDtoList.stream().anyMatch(s -> s.getIdMonopatin() == scooter.getId())) {
-						scootersWithTime.add(new DtoMonoDuracion(scooter.getId(), scooter.getEstado(), scooter.getLatitud(),
-						scooter.getLongitud(), scooter.getUltimoMantenimiento(), 0L));
+				//Add monopatin that have not viaje to return list
+				for (Monopatin monopatin : monopatinRepository.findAll()) {
+					if (!timeDtoList.stream().anyMatch(s -> s.getIdMonopatin() == monopatin.getId())) {
+						monopatinWithTime.add(new DtoMonoDuracion(monopatin.getId(), monopatin.getEstado(), monopatin.getLatitud(),
+						monopatin.getLongitud(), monopatin.getUltimoMantenimiento(), 0L));
 					}
 				}
-				return ResponseEntity.ok(scootersWithTime);
+				return ResponseEntity.ok(monopatinWithTime);
 			}
 			return ResponseEntity.badRequest().build();
 		} catch (Exception e) {

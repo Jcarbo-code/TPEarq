@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ServicioCuenta {
 
     @InjectMocks
-    private ServicioCuenta accountsService;
+    private ServicioCuenta cuentaService;
 
     @Test
     void convertToEntity_shouldReturnAccount() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -27,7 +27,7 @@ public class ServicioCuenta {
         
         Method convertToEntityMethod = ServicioCuenta.class.getDeclaredMethod("convertToEntity", DtoCuenta.class);
         convertToEntityMethod.setAccessible(true);  // Make the private method accessible
-        Cuenta result = (Cuenta) convertToEntityMethod.invoke(accountsService, accountDto);
+        Cuenta result = (Cuenta) convertToEntityMethod.invoke(cuentaService, accountDto);
 
         assertEquals(today, result.getFechaAlta());
         assertEquals(100.0, result.getSaldo());

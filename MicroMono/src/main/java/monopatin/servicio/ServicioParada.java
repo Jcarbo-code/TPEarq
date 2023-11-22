@@ -21,11 +21,11 @@ public class ServicioParada {
 	private ServicioAutenticidad authService;
 	
 	public ResponseEntity<Parada> save(HttpServletRequest request, DtoParada dto) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -40,11 +40,11 @@ public class ServicioParada {
 	}
 
 	public ResponseEntity<List<Parada>> findAll(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String rol = authService.getRoleFromToken(token);
+		String rol = authService.getRol(token);
 		if (rol == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}

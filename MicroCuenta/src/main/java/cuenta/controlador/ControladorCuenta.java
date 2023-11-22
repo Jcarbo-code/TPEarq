@@ -19,41 +19,41 @@ import cuenta.servicio.ServicioCuenta;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/cuenta")
 public class ControladorCuenta {
 
 	@Autowired
-	RepositorioCuenta accountsRepository;
+	RepositorioCuenta cuentaRepository;
 	@Autowired
-	ServicioCuenta accountsService;
+	ServicioCuenta cuentaService;
 	
-	@PostMapping("/{accountId}/addMoney/{moneyCount}")
-	public ResponseEntity<Cuenta> addMoney(HttpServletRequest request, @PathVariable int accountId, @PathVariable double moneyCount) {
-		return accountsService.addMoney(request, accountId, moneyCount);
+	@PostMapping("/{accountId}/acreditar/{moneyCount}")
+	public ResponseEntity<Cuenta> acreditar(HttpServletRequest request, @PathVariable int accountId, @PathVariable double moneyCount) {
+		return cuentaService.acreditar(request, accountId, moneyCount);
 	}
 	
 	@PostMapping
 	public Cuenta create(@RequestBody DtoCuenta dto) {
-		return accountsService.save(dto);
+		return cuentaService.save(dto);
 	}
 	
 	@GetMapping
 	public ResponseEntity<List<Cuenta>> findAll(HttpServletRequest request) {
-		return accountsService.findAll(request);
+		return cuentaService.findAll(request);
 	}
 	
 	@GetMapping("/{accountId}")
 	public ResponseEntity<Cuenta> getById(HttpServletRequest request, @PathVariable int accountId) {
-		return accountsService.getById(request, accountId);
+		return cuentaService.getById(request, accountId);
 	}
 	
-	@PatchMapping("/{accountId}/deactivate")
+	@PatchMapping("/{accountId}/deactivar")
 	public ResponseEntity<Cuenta> deactiveAccount(HttpServletRequest request, @PathVariable int accountId) {
-		return accountsService.deactivate(request, accountId);
+		return cuentaService.deactivar(request, accountId);
 	}
 	
-	@PatchMapping("/{accountId}/activate")
-	public ResponseEntity<Cuenta> activate(HttpServletRequest request, @PathVariable int accountId) {
-		return accountsService.activate(request, accountId);
+	@PatchMapping("/{accountId}/activar")
+	public ResponseEntity<Cuenta> activar(HttpServletRequest request, @PathVariable int accountId) {
+		return cuentaService.activar(request, accountId);
 	}
 }

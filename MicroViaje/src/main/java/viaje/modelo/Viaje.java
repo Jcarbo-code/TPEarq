@@ -49,15 +49,15 @@ public class Viaje {
 	public Viaje() {}
 
 	public int getId() {return id;}
-	public LocalDateTime getStartTime() {return inicio;}
-	public LocalDateTime getEndTime() {return fin;}
-	public double getDistance() {return distancia;}
+	public LocalDateTime getInicio() {return inicio;}
+	public LocalDateTime getFin() {return fin;}
+	public double getDistancia() {return distancia;}
 	public double getPrice() {return precio;}
 	public int getUserId() {return userId;}
 	public int getIdMonopatin() {return idMonopatin;}
     public List<Pausa> getPauses() {return pauses;}
 	
 	public void setEndTime(LocalDateTime fin) {this.fin = fin;}
-	public void setDistance(double distancia) {this.distancia = distancia;}
+	public void setDistancia(double distancia) {this.distancia = distancia;}
 	public void setPrice(double precio) {this.precio = precio;}
 }

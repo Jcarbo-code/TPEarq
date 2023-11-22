@@ -19,7 +19,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "app_user")
-public class Usuario implements UserDetails{
+public class Usuario implements UserDetails{		
 
 	@Id @GeneratedValue (strategy = GenerationType.AUTO)
 	private int id;
@@ -40,7 +40,7 @@ public class Usuario implements UserDetails{
 	String rol;
 	
 	@ManyToMany
-	private Set<Cuenta> accounts;
+	private Set<Cuenta> cuenta;
 
 	public Usuario(String nombre, String email, String clave, String celular, String rol) {
 		this.nombre = nombre;
@@ -48,7 +48,7 @@ public class Usuario implements UserDetails{
 		this.clave = clave;
 		this.celular = celular;
 		this.rol = rol;
-		this.accounts = new HashSet<>();
+		this.cuenta = new HashSet<>();
 	}
 	
 	public Usuario() {}
@@ -58,7 +58,7 @@ public class Usuario implements UserDetails{
 	public String getEmail() {return email;}
 	public String getCelular() {return celular;}
 	public String getRol() {return rol;}
-	public Set<Cuenta> getAccounts () {return accounts;}
+	public Set<Cuenta> getCuenta () {return cuenta;}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -96,6 +96,6 @@ public class Usuario implements UserDetails{
 	}
 
 	public void addAccount(Cuenta account) {
-		this.accounts.add(account);
+		this.cuenta.add(account);
 	}
 }

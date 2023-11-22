@@ -32,7 +32,7 @@ public class Cuenta {
 	private boolean anulada;
 	
 	@JsonIgnore
-	@ManyToMany(mappedBy = "accounts")
+	@ManyToMany(mappedBy = "cuenta")
 	private Set<Usuario> users;
 	
 	public Cuenta(LocalDate fechaAlta, double saldo, String mercadoPagoId) {
@@ -52,27 +52,27 @@ public class Cuenta {
 	public boolean  getAnulada() {return anulada;}
 	public Set<Usuario> getUsers() {return users;}
 	
-	public void addMoney(double saldo) {
+	public void acreditar(double saldo) {
 		this.saldo += saldo;
 	}
 	
-	public void addUser(Usuario user) {
+	public void agregarUsuario(Usuario user) {
 		users.add(user);
 	}
 	
-    public void removeUser(Usuario user) {
+    public void eliminarUsuario(Usuario user) {
         users.remove(user);
     }
 
-	public void deactivate() {
+	public void deactivar() {
 		anulada = false;
 	}
 	
-	public void activate() {
+	public void activar() {
 		anulada = true;
 	}
 
-	public void payService(double saldo) {
+	public void pagar(double saldo) {
 		this.saldo -= saldo;
 	}
 }

@@ -35,9 +35,9 @@ public interface RepositorioConfig extends MongoRepository<Config, String>{
 
         Aggregation aggregation = newAggregation(match, sort, limit, project);
 
-        List<Config> fares = mongoTemplate.aggregate(aggregation, Config.class, Config.class).getMappedResults();
+        List<Config> configuracion = mongoTemplate.aggregate(aggregation, Config.class, Config.class).getMappedResults();
 
-        return fares.isEmpty() ? Optional.empty() : Optional.of(fares.get(0).getStandardPrice());
+        return configuracion.isEmpty() ? Optional.empty() : Optional.of(configuracion.get(0).getStandardPrice());
     }
 
     default Optional<Double> findCurrentExtendedPausePrice(LocalDate today, MongoTemplate mongoTemplate) {
@@ -48,9 +48,9 @@ public interface RepositorioConfig extends MongoRepository<Config, String>{
 
         Aggregation aggregation = newAggregation(match, sort, limit, project);
 
-        List<Config> fares = mongoTemplate.aggregate(aggregation, Config.class, Config.class).getMappedResults();
+        List<Config> configuracion = mongoTemplate.aggregate(aggregation, Config.class, Config.class).getMappedResults();
 
-        return fares.isEmpty() ? Optional.empty() : Optional.of(fares.get(0).getExtendedPausePrice());
+        return configuracion.isEmpty() ? Optional.empty() : Optional.of(configuracion.get(0).getExtendedPausePrice());
     }
 
 }

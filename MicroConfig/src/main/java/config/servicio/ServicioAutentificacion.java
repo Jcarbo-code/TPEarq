@@ -18,7 +18,7 @@ public class ServicioAutentificacion {
 
     private HttpClient client = HttpClient.newHttpClient();
 
-    public String getTokenFromRequest(HttpServletRequest request) {
+    public String getToken(HttpServletRequest request) {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer "))
             return authHeader.substring(7);

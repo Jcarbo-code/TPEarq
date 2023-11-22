@@ -19,14 +19,14 @@ import jakarta.servlet.http.HttpServletRequest;
 public class ServicioConfig {
 	
 	@Autowired
-	private RepositorioConfig fareRepository;
+	private RepositorioConfig configuracionRepository;
 	@Autowired
 	private ServicioAutentificacion authService;
 	@Autowired
 	MongoTemplate mongoTemplate;
 
 	public ResponseEntity<Config> save(HttpServletRequest request, DtoPrecios dto) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -38,20 +38,20 @@ public class ServicioConfig {
 		LocalDate today = LocalDate.now();
 		LocalDate fechaCambio = dto.getStartDate();
 		if (fechaCambio.isAfter(today) || fechaCambio.isEqual(today)) {
-			Config fare = convertToEntity(dto);
-			return ResponseEntity.ok(fareRepository.save(fare));
+			Config configuracion = convertToEntity(dto);
+			return ResponseEntity.ok(configuracionRepository.save(configuracion));
 		}
 		return ResponseEntity.badRequest().build();
 	}
 	
 	public ResponseEntity<Double> getCurrentStandardPrice(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null || !authService.isTokenValid(token)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
 	    LocalDate today = LocalDate.now();
-	    Optional<Double> currentStandardPriceOptional = fareRepository.findCurrentStandardPrice(today, mongoTemplate);
+	    Optional<Double> currentStandardPriceOptional = configuracionRepository.findCurrentStandardPrice(today, mongoTemplate);
 	    if (currentStandardPriceOptional.isPresent()) {
 	    	return ResponseEntity.ok(currentStandardPriceOptional.get());
 	    }
@@ -59,13 +59,13 @@ public class ServicioConfig {
 	}
 	
 	public ResponseEntity<Double> getCurrentExtendedPausePrice(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null || !authService.isTokenValid(token)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
 	    LocalDate today = LocalDate.now();
-	    Optional<Double> currentExtendedPausePriceOptional = fareRepository.findCurrentExtendedPausePrice(today, mongoTemplate);
+	    Optional<Double> currentExtendedPausePriceOptional = configuracionRepository.findCurrentExtendedPausePrice(today, mongoTemplate);
 	    if (currentExtendedPausePriceOptional.isPresent()) {
 	    	return ResponseEntity.ok(currentExtendedPausePriceOptional.get());
 	    }
@@ -77,7 +77,7 @@ public class ServicioConfig {
 	}
 
 	public ResponseEntity<List<Config>> findAll(HttpServletRequest request) {
-		String token = authService.getTokenFromRequest(request);
+		String token = authService.getToken(request);
 		if (token == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
@@ -85,6 +85,6 @@ public class ServicioConfig {
 		if (rol == null || !rol.equals("ADMIN")) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		return ResponseEntity.ok(fareRepository.findAll());
+		return ResponseEntity.ok(configuracionRepository.findAll());
 	}
 }

@@ -10,7 +10,7 @@ public class DtoMonopatin {
 	private LocalDate ultimoMantenimiento;
 	
 	public DtoMonopatin(double latitud, double longitud, LocalDate ultimoMantenimiento) {
-		this.estado = "libre";
+		this.estado = "Libre";
 		this.latitud = latitud;
 		this.longitud = longitud;
 		this.ultimoMantenimiento = ultimoMantenimiento;
